@@ -57,43 +57,42 @@ ALTER TABLE Student ADD City VARCHAR(30);
 
 **Step 6: Use ALTER TABLE to modify the datatype/size of column Stud_Name**
 
-```sql
+
 ALTER TABLE Student MODIFY Stud_Name VARCHAR(100) NOT NULL;
 ```
 
 **Step 7: Rename column City to Location in the Student table**
 
-```sql
 ALTER TABLE Student RENAME COLUMN City TO Location;
 ```
 
 **Step 8: Add a DEFAULT constraint to column Location in the Student table**
 
-```sql
+
 ALTER TABLE Student ALTER COLUMN Location SET DEFAULT 'Unknown';
 ```
 
 **Step 9: Rename the table Student to Student_Details**
 
-```sql
+
 RENAME TABLE Student TO Student_Details;
 ```
 
 **Step 10: Use TRUNCATE command to remove all records from Student_Details**
 
-```sql
+
 TRUNCATE TABLE Student_Details;
 ```
 
 **Step 11: Use DROP command to delete the table Student_Details**
 
-```sql
+
 DROP TABLE Student_Details;
 ```
 
 **Step 12: Create a Course table with the following fields and constraints**
 
-```sql
+
 CREATE TABLE Course (
     Course_ID INT PRIMARY KEY,
     Course_Name VARCHAR(50) NOT NULL UNIQUE,
@@ -103,7 +102,7 @@ CREATE TABLE Course (
 
 **Step 13: Create a Student_Course table with a FOREIGN KEY constraint referencing Course_ID from the Course table**
 
-```sql
+
 CREATE TABLE Student_Course (
     Student_ID INT,
     Course_ID INT,
@@ -114,13 +113,13 @@ CREATE TABLE Student_Course (
 
 **Step 14: Insert a record into Student_Course that violates the FOREIGN KEY constraint**
 
-```sql
+
 INSERT INTO Student_Course (Student_ID, Course_ID, Enrollment_Date) VALUES
 (1, 999, '2023-10-01');
 ```
 
 **Exit MySQL**
 
-```sql
+
 EXIT;
 ```
