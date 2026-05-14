@@ -10,6 +10,8 @@ sudo mysql -u root -p
 ```
 
 **Step 1: Create a Department table with the following fields and constraints**
+ CREATE DATABASE LibraryDB;
+USE LibraryDB;
 
 
 CREATE TABLE Department (
