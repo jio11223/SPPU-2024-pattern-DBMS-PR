@@ -1,0 +1,30 @@
+# 1. INSTALL MONGODB (UBUNTU / KALI)
+# ==========================================
+
+sudo apt update
+
+sudo apt install -y mongodb
+
+# Start MongoDB Service
+sudo systemctl start mongodb
+
+# Enable MongoDB at boot
+sudo systemctl enable mongodb
+
+# Check Status
+sudo systemctl status mongodb
+
+
+# ==========================================
+# 2. OPEN MONGODB SHELL
+# ==========================================
+
+mongosh
+
+
+# ==========================================
+# 3. CREATE / SWITCH DATABASE
+# ==========================================
+
+use dbms_lab
+
