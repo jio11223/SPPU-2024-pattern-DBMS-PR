@@ -1,12 +1,13 @@
 # 1. INSTALL MONGODB (UBUNTU / KALI)
 # ==========================================
-sudo apt install -y mongodb
+sudo apt update
+sudo apt install mongodb-org
 
 # Start MongoDB Service
-sudo systemctl start mongodb
+sudo systemctl start mongod
 
 # Enable MongoDB at boot
-sudo systemctl enable mongodb
+sudo systemctl enable mongod
 =
 # 2. OPEN MONGODB SHELL
 
