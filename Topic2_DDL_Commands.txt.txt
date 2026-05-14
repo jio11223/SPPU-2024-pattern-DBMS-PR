@@ -1,0 +1,126 @@
+
+
+---
+
+**Step 0: Ubuntu Terminal Setup**
+sudo apt update
+sudo apt install mysql-server -y
+sudo mysql_secure_installation
+sudo mysql -u root -p
+```
+
+**Step 1: Create a Department table with the following fields and constraints**
+
+
+CREATE TABLE Department (
+    Dept_ID INT PRIMARY KEY,
+    Dept_Name VARCHAR(50) UNIQUE NOT NULL
+);
+```
+
+**Step 2: Create a Student table with the following fields and constraints**
+
+
+CREATE TABLE Student (
+    Stud_ID INT PRIMARY KEY,
+    Stud_Name VARCHAR(50) NOT NULL,
+    Age INT CHECK (Age >= 18),
+    Email VARCHAR(100) UNIQUE,
+    Dept_ID INT,
+    FOREIGN KEY (Dept_ID) REFERENCES Department(Dept_ID)
+);
+```
+
+**Step 3: Insert multiple records into the Department table**
+
+
+INSERT INTO Department (Dept_ID, Dept_Name) VALUES
+(1, 'Computer Science'),
+(2, 'Information Technology'),
+(3, 'Electronics');
+```
+
+**Step 4: Insert multiple records into the Student table**
+
+
+INSERT INTO Student (Stud_ID, Stud_Name, Age, Email, Dept_ID) VALUES
+(101, 'John Doe', 20, 'john.doe@example.com', 1),
+(102, 'Jane Smith', 22, 'jane.smith@example.com', 2),
+(103, 'Alice Johnson', 19, 'alice.j@example.com', 1);
+```
+
+**Step 5: Use ALTER TABLE to add a new column City (VARCHAR(30)) to the Student table**
+
+
+ALTER TABLE Student ADD City VARCHAR(30);
+```
+
+**Step 6: Use ALTER TABLE to modify the datatype/size of column Stud_Name**
+
+```sql
+ALTER TABLE Student MODIFY Stud_Name VARCHAR(100) NOT NULL;
+```
+
+**Step 7: Rename column City to Location in the Student table**
+
+```sql
+ALTER TABLE Student RENAME COLUMN City TO Location;
+```
+
+**Step 8: Add a DEFAULT constraint to column Location in the Student table**
+
+```sql
+ALTER TABLE Student ALTER COLUMN Location SET DEFAULT 'Unknown';
+```
+
+**Step 9: Rename the table Student to Student_Details**
+
+```sql
+RENAME TABLE Student TO Student_Details;
+```
+
+**Step 10: Use TRUNCATE command to remove all records from Student_Details**
+
+```sql
+TRUNCATE TABLE Student_Details;
+```
+
+**Step 11: Use DROP command to delete the table Student_Details**
+
+```sql
+DROP TABLE Student_Details;
+```
+
+**Step 12: Create a Course table with the following fields and constraints**
+
+```sql
+CREATE TABLE Course (
+    Course_ID INT PRIMARY KEY,
+    Course_Name VARCHAR(50) NOT NULL UNIQUE,
+    Duration INT CHECK (Duration >= 1)
+);
+```
+
+**Step 13: Create a Student_Course table with a FOREIGN KEY constraint referencing Course_ID from the Course table**
+
+```sql
+CREATE TABLE Student_Course (
+    Student_ID INT,
+    Course_ID INT,
+    Enrollment_Date DATE,
+    FOREIGN KEY (Course_ID) REFERENCES Course(Course_ID)
+);
+```
+
+**Step 14: Insert a record into Student_Course that violates the FOREIGN KEY constraint**
+
+```sql
+INSERT INTO Student_Course (Student_ID, Course_ID, Enrollment_Date) VALUES
+(1, 999, '2023-10-01');
+```
+
+**Exit MySQL**
+
+```sql
+EXIT;
+```
