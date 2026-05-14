@@ -1,0 +1,287 @@
+// =====================================
+// CREATE COLLECTION & INSERT DOCUMENTS
+// =====================================
+
+db.orders.insertMany([
+{
+    cust_id: 101,
+    item_name: "Laptop",
+    DtOfOrder: new Date("2023-10-01"),
+    quantity: 1,
+    amount: 50000,
+    status: "D"
+},
+{
+    cust_id: 102,
+    item_name: "Mouse",
+    DtOfOrder: new Date("2023-10-02"),
+    quantity: 2,
+    amount: 1000,
+    status: "P"
+},
+{
+    cust_id: 101,
+    item_name: "Keyboard",
+    DtOfOrder: new Date("2023-10-05"),
+    quantity: 1,
+    amount: 1500,
+    status: "D"
+},
+{
+    cust_id: 103,
+    item_name: "Monitor",
+    DtOfOrder: new Date("2023-10-05"),
+    quantity: 2,
+    amount: 20000,
+    status: "P"
+},
+{
+    cust_id: 102,
+    item_name: "Laptop",
+    DtOfOrder: new Date("2023-10-06"),
+    quantity: 1,
+    amount: 48000,
+    status: "P"
+},
+{
+    cust_id: 104,
+    item_name: "Headphones",
+    DtOfOrder: new Date("2023-10-06"),
+    quantity: 3,
+    amount: 4500,
+    status: "D"
+},
+{
+    cust_id: 105,
+    item_name: "Mouse",
+    DtOfOrder: new Date("2023-10-08"),
+    quantity: 5,
+    amount: 2500,
+    status: "D"
+},
+{
+    cust_id: 101,
+    item_name: "Monitor",
+    DtOfOrder: new Date("2023-10-10"),
+    quantity: 1,
+    amount: 10000,
+    status: "P"
+},
+{
+    cust_id: 103,
+    item_name: "Webcam",
+    DtOfOrder: new Date("2023-10-10"),
+    quantity: 1,
+    amount: 3000,
+    status: "P"
+},
+{
+    cust_id: 104,
+    item_name: "Keyboard",
+    DtOfOrder: new Date("2023-10-12"),
+    quantity: 2,
+    amount: 3000,
+    status: "D"
+}
+])
+
+
+// =====================================
+// 1. CREATE INDEXES
+// =====================================
+
+// Index on customer id
+db.orders.createIndex({ cust_id: 1 })
+
+// Index on item name
+db.orders.createIndex({ item_name: 1 })
+
+
+// =====================================
+// 2. DISPLAY DISTINCT CUSTOMER IDS
+// =====================================
+
+db.orders.distinct("cust_id")
+
+
+// =====================================
+// 3. COUNT TOTAL & PENDING ORDERS
+// =====================================
+
+// Total Orders
+db.orders.countDocuments({})
+
+// Pending Orders
+db.orders.countDocuments({
+    status: "P"
+})
+
+
+// =====================================
+// 4. SORTING WITH & WITHOUT INDEX
+// =====================================
+
+// WITHOUT INDEX
+db.orders.find()
+.sort({ amount: 1 })
+.explain("executionStats")
+
+
+// CREATE INDEX ON AMOUNT
+db.orders.createIndex({ amount: 1 })
+
+
+// WITH INDEX
+db.orders.find()
+.sort({ amount: 1 })
+.explain("executionStats")
+
+
+// =====================================
+// 5. PENDING ORDERS WITH & WITHOUT INDEX
+// =====================================
+
+// WITHOUT INDEX
+db.orders.find({
+    status: "P"
+})
+.explain("executionStats")
+
+
+// CREATE INDEX ON STATUS
+db.orders.createIndex({ status: 1 })
+
+
+// WITH INDEX
+db.orders.find({
+    status: "P"
+})
+.explain("executionStats")
+
+
+// =====================================
+// 6. TOTAL ORDERS BY EACH CUSTOMER
+// =====================================
+
+db.orders.aggregate([
+{
+    $group: {
+        _id: "$cust_id",
+        total_orders: { $sum: 1 }
+    }
+}
+])
+
+
+// =====================================
+// 7. TOTAL PENDING AMOUNT OF CUSTOMERS
+// =====================================
+
+db.orders.aggregate([
+{
+    $match: {
+        status: "P"
+    }
+},
+{
+    $group: {
+        _id: "$cust_id",
+        pending_amount: { $sum: "$amount" }
+    }
+},
+{
+    $sort: {
+        pending_amount: -1
+    }
+}
+])
+
+
+// =====================================
+// 8. DELIVERED ORDER AMOUNT
+// =====================================
+
+db.orders.aggregate([
+{
+    $match: {
+        status: "D"
+    }
+},
+{
+    $group: {
+        _id: "$cust_id",
+        delivered_amount: { $sum: "$amount" }
+    }
+},
+{
+    $sort: {
+        _id: 1
+    }
+}
+])
+
+
+// =====================================
+// 9. TOP 3 SELLING ITEMS
+// =====================================
+
+db.orders.aggregate([
+{
+    $group: {
+        _id: "$item_name",
+        total_sold: { $sum: "$quantity" }
+    }
+},
+{
+    $sort: {
+        total_sold: -1
+    }
+},
+{
+    $limit: 3
+}
+])
+
+
+// =====================================
+// 10. DATE WITH MAXIMUM ORDERS
+// =====================================
+
+db.orders.aggregate([
+{
+    $group: {
+        _id: "$DtOfOrder",
+        count_orders: { $sum: 1 }
+    }
+},
+{
+    $sort: {
+        count_orders: -1
+    }
+},
+{
+    $limit: 1
+}
+])
+
+
+// =====================================
+// 11. FIRST & LAST ORDER DATE
+// =====================================
+
+db.orders.aggregate([
+{
+    $group: {
+        _id: "$cust_id",
+        first_order: { $min: "$DtOfOrder" },
+        last_order: { $max: "$DtOfOrder" }
+    }
+}
+])
+
+
+// =====================================
+// OPTIONAL: DISPLAY ALL DOCUMENTS
+// =====================================
+
+db.orders.find().pretty()

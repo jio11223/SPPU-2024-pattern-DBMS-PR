@@ -1,0 +1,227 @@
+# =========================================
+# STORED PROCEDURES AND FUNCTIONS
+# USING CURSORS - MYSQL PRACTICAL
+# =========================================
+
+# ---------- CREATE DATABASE ----------
+
+CREATE DATABASE EmployeeDB;
+USE EmployeeDB;
+
+
+# ---------- CREATE TABLE ----------
+
+CREATE TABLE employees(
+    emp_id INT PRIMARY KEY,
+    emp_name VARCHAR(50),
+    dept VARCHAR(50),
+    salary DECIMAL(10,2),
+    bonus DECIMAL(10,2) DEFAULT 0
+);
+
+
+# ---------- INSERT DATA ----------
+
+INSERT INTO employees(emp_id, emp_name, dept, salary) VALUES
+(101,'Amit','HR',50000),
+(102,'Priya','IT',60000),
+(103,'Rahul','Sales',40000),
+(104,'Sneha','IT',70000),
+(105,'Vikram','Admin',45000);
+
+
+# ---------- DISPLAY TABLE ----------
+
+SELECT * FROM employees;
+
+
+# =========================================
+# STORED PROCEDURE USING CURSOR
+# =========================================
+
+# ---------- PROCEDURE ----------
+
+DELIMITER //
+
+CREATE PROCEDURE CalculateBonus()
+BEGIN
+
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE e_id INT;
+    DECLARE e_salary DECIMAL(10,2);
+
+    -- Cursor Declaration
+    DECLARE cur CURSOR FOR
+    SELECT emp_id, salary
+    FROM employees;
+
+    -- Handler
+    DECLARE CONTINUE HANDLER
+    FOR NOT FOUND
+    SET done = TRUE;
+
+    OPEN cur;
+
+    read_loop: LOOP
+
+        FETCH cur INTO e_id, e_salary;
+
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Update Bonus
+        UPDATE employees
+        SET bonus = e_salary * 0.10
+        WHERE emp_id = e_id;
+
+    END LOOP;
+
+    CLOSE cur;
+
+END //
+
+DELIMITER ;
+
+
+# ---------- EXECUTE PROCEDURE ----------
+
+CALL CalculateBonus();
+
+
+# ---------- DISPLAY UPDATED TABLE ----------
+
+SELECT * FROM employees;
+
+
+# =========================================
+# FUNCTION USING CURSOR
+# =========================================
+
+# ---------- FUNCTION ----------
+
+DELIMITER //
+
+CREATE FUNCTION CountHighEarners(min_salary DECIMAL(10,2))
+RETURNS INT
+DETERMINISTIC
+
+BEGIN
+
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE count_val INT DEFAULT 0;
+    DECLARE e_salary DECIMAL(10,2);
+
+    -- Cursor Declaration
+    DECLARE cur CURSOR FOR
+    SELECT salary
+    FROM employees;
+
+    -- Handler
+    DECLARE CONTINUE HANDLER
+    FOR NOT FOUND
+    SET done = TRUE;
+
+    OPEN cur;
+
+    read_loop: LOOP
+
+        FETCH cur INTO e_salary;
+
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Salary Check
+        IF e_salary > min_salary THEN
+            SET count_val = count_val + 1;
+        END IF;
+
+    END LOOP;
+
+    CLOSE cur;
+
+    RETURN count_val;
+
+END //
+
+DELIMITER ;
+
+
+# ---------- EXECUTE FUNCTION ----------
+
+SELECT CountHighEarners(50000)
+AS Employees_Above_50k;
+
+
+# =========================================
+# ADDITIONAL CURSOR EXAMPLES
+# =========================================
+
+# ---------- PROCEDURE FOR SALARY HIKE ----------
+
+DELIMITER //
+
+CREATE PROCEDURE IncreaseSalary()
+BEGIN
+
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE e_id INT;
+    DECLARE e_salary DECIMAL(10,2);
+
+    DECLARE cur CURSOR FOR
+    SELECT emp_id, salary
+    FROM employees;
+
+    DECLARE CONTINUE HANDLER
+    FOR NOT FOUND
+    SET done = TRUE;
+
+    OPEN cur;
+
+    salary_loop: LOOP
+
+        FETCH cur INTO e_id, e_salary;
+
+        IF done THEN
+            LEAVE salary_loop;
+        END IF;
+
+        -- Increase Salary by 5%
+        UPDATE employees
+        SET salary = e_salary * 1.05
+        WHERE emp_id = e_id;
+
+    END LOOP;
+
+    CLOSE cur;
+
+END //
+
+DELIMITER ;
+
+
+# ---------- EXECUTE SALARY PROCEDURE ----------
+
+CALL IncreaseSalary();
+
+
+# ---------- DISPLAY FINAL TABLE ----------
+
+SELECT * FROM employees;
+
+
+# ---------- DROP PROCEDURE ----------
+
+DROP PROCEDURE CalculateBonus;
+DROP PROCEDURE IncreaseSalary;
+
+
+# ---------- DROP FUNCTION ----------
+
+DROP FUNCTION CountHighEarners;
+
+
+# ---------- EXIT MYSQL ----------
+
+EXIT;

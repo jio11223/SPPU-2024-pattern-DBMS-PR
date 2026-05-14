@@ -1,0 +1,142 @@
+# =========================================
+# AGGREGATE FUNCTIONS AND GROUP BY
+# =========================================
+
+# ---------- CREATE DATABASE ----------
+
+CREATE DATABASE Student_Result_DB;
+USE Student_Result_DB;
+
+
+# ---------- CREATE TABLE ----------
+
+CREATE TABLE Student_Result(
+    Student_ID INT PRIMARY KEY,
+    Student_Name VARCHAR(50),
+    Subject VARCHAR(50),
+    Marks INT,
+    Department VARCHAR(50)
+);
+
+
+# ---------- INSERT DATA ----------
+
+INSERT INTO Student_Result VALUES
+(1,'Alice','Math',85,'Science'),
+(2,'Bob','Physics',75,'Science'),
+(3,'Charlie','Math',90,'Science'),
+(4,'David','English',82,'Arts'),
+(5,'Eve','History',88,'Arts'),
+(6,'Frank','English',78,'Arts'),
+(7,'Grace','Accounting',95,'Commerce'),
+(8,'Heidi','Economics',80,'Commerce'),
+(9,'Ivan','Math',65,'Science'),
+(10,'Judy','Accounting',88,'Commerce'),
+(11,'Kevin','Math',82,'Science'),
+(12,'Laura','Physics',91,'Science');
+
+
+# ---------- DISPLAY TABLE ----------
+
+SELECT * FROM Student_Result;
+
+
+# ---------- COUNT WITH GROUP BY ----------
+
+SELECT Department, COUNT(Student_ID) AS Total_Students
+FROM Student_Result
+GROUP BY Department;
+
+
+# ---------- AVERAGE MARKS ----------
+
+SELECT Subject, AVG(Marks) AS Average_Marks
+FROM Student_Result
+GROUP BY Subject;
+
+
+# ---------- MAXIMUM MARKS ----------
+
+SELECT Subject, MAX(Marks) AS Highest_Marks
+FROM Student_Result
+GROUP BY Subject;
+
+
+# ---------- MINIMUM MARKS ----------
+
+SELECT Subject, MIN(Marks) AS Lowest_Marks
+FROM Student_Result
+GROUP BY Subject;
+
+
+# ---------- SUM OF MARKS ----------
+
+SELECT Department, SUM(Marks) AS Total_Marks
+FROM Student_Result
+GROUP BY Department;
+
+
+# ---------- COUNT STUDENTS PER SUBJECT ----------
+
+SELECT Subject, COUNT(Student_ID) AS Student_Count
+FROM Student_Result
+GROUP BY Subject;
+
+
+# ---------- HAVING WITH AVG ----------
+
+SELECT Department, AVG(Marks) AS Average_Marks
+FROM Student_Result
+GROUP BY Department
+HAVING AVG(Marks) > 80;
+
+
+# ---------- HAVING WITH COUNT ----------
+
+SELECT Subject, COUNT(Student_ID) AS Student_Count
+FROM Student_Result
+GROUP BY Subject
+HAVING COUNT(Student_ID) > 3;
+
+
+# ---------- WHERE + GROUP BY ----------
+
+SELECT Department, AVG(Marks) AS Average_Marks
+FROM Student_Result
+WHERE Marks > 70
+GROUP BY Department;
+
+
+# ---------- MAX MARKS BY DEPARTMENT ----------
+
+SELECT Department, MAX(Marks) AS Max_Marks
+FROM Student_Result
+GROUP BY Department;
+
+
+# ---------- MIN MARKS BY DEPARTMENT ----------
+
+SELECT Department, MIN(Marks) AS Min_Marks
+FROM Student_Result
+GROUP BY Department;
+
+
+# ---------- HAVING WITH SUM ----------
+
+SELECT Department, SUM(Marks) AS Total_Marks
+FROM Student_Result
+GROUP BY Department
+HAVING SUM(Marks) > 400;
+
+
+# ---------- HAVING WITH AVG SUBJECT ----------
+
+SELECT Subject, AVG(Marks) AS Average_Marks
+FROM Student_Result
+GROUP BY Subject
+HAVING AVG(Marks) > 80;
+
+
+# ---------- EXIT MYSQL ----------
+
+EXIT;

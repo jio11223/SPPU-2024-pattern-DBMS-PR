@@ -1,0 +1,298 @@
+# =========================================
+# JOIN OPERATIONS AND VIEWS - BANK DATABASE
+# =========================================
+
+# ---------- CREATE DATABASE ----------
+
+CREATE DATABASE BankDB;
+USE BankDB;
+
+
+# ---------- CREATE TABLES ----------
+
+CREATE TABLE branch_master(
+    branch_id INT PRIMARY KEY,
+    bname VARCHAR(50)
+);
+
+CREATE TABLE employee_master(
+    emp_no INT PRIMARY KEY,
+    e_name VARCHAR(50),
+    branch_id INT,
+    salary DECIMAL(10,2),
+    dept VARCHAR(50),
+    manager_id INT,
+    FOREIGN KEY(branch_id)
+    REFERENCES branch_master(branch_id),
+
+    FOREIGN KEY(manager_id)
+    REFERENCES employee_master(emp_no)
+);
+
+CREATE TABLE contact_details(
+    emp_id INT,
+    emailid VARCHAR(100),
+    phnno VARCHAR(15),
+
+    FOREIGN KEY(emp_id)
+    REFERENCES employee_master(emp_no)
+);
+
+CREATE TABLE emp_address_details(
+    emp_id INT,
+    street VARCHAR(100),
+    city VARCHAR(50),
+    state VARCHAR(50),
+
+    FOREIGN KEY(emp_id)
+    REFERENCES employee_master(emp_no)
+);
+
+CREATE TABLE branch_address(
+    branch_id INT,
+    city VARCHAR(50),
+    state VARCHAR(50),
+
+    FOREIGN KEY(branch_id)
+    REFERENCES branch_master(branch_id)
+);
+
+
+# ---------- INSERT DATA ----------
+
+INSERT INTO branch_master VALUES
+(1,'Vadgaon'),
+(2,'Kothrud'),
+(3,'Deccan');
+
+INSERT INTO employee_master VALUES
+(101,'Amit',1,30000,'Admin',NULL),
+(102,'Priya',1,25000,'Admin',101),
+(103,'Rahul',2,15000,'IT',101),
+(104,'Sneha',2,20000,'Finance',101),
+(105,'Vikram',3,12000,'IT',101),
+(106,'Neha',1,8000,'Admin',102);
+
+INSERT INTO contact_details VALUES
+(101,'amit@bank.com','9876543210'),
+(102,'priya@bank.com','9876543211'),
+(103,'rahul@bank.com','9876543212'),
+(105,'vikram@bank.com','9876543214');
+
+INSERT INTO emp_address_details VALUES
+(101,'MG Road','Pune','Maharashtra'),
+(102,'FC Road','Pune','Maharashtra'),
+(103,'SB Road','Mumbai','Maharashtra'),
+(104,'JM Road','Pune','Maharashtra'),
+(105,'Lane 5','Nagpur','Maharashtra'),
+(106,'Lane 8','Pune','Maharashtra');
+
+INSERT INTO branch_address VALUES
+(1,'Pune','Maharashtra'),
+(2,'Pune','Maharashtra'),
+(3,'Nagpur','Maharashtra');
+
+
+# =========================================
+# JOIN OPERATIONS
+# =========================================
+
+# ---------- INNER JOIN ----------
+
+SELECT e.emp_no, e.e_name, b.bname
+FROM employee_master e
+INNER JOIN branch_master b
+ON e.branch_id = b.branch_id;
+
+
+# ---------- INNER JOIN WITH CONDITION ----------
+
+SELECT e.emp_no, e.e_name, b.bname
+FROM employee_master e
+INNER JOIN branch_master b
+ON e.branch_id = b.branch_id
+WHERE e.dept='Admin';
+
+
+# ---------- MULTIPLE INNER JOIN ----------
+
+SELECT e.e_name, c.phnno, a.city
+FROM employee_master e
+INNER JOIN contact_details c
+ON e.emp_no = c.emp_id
+INNER JOIN emp_address_details a
+ON e.emp_no = a.emp_id;
+
+
+# ---------- LEFT JOIN ----------
+
+SELECT e.e_name, c.emailid, c.phnno
+FROM employee_master e
+LEFT JOIN contact_details c
+ON e.emp_no = c.emp_id;
+
+
+# ---------- RIGHT JOIN ----------
+
+SELECT e.e_name, c.emailid, c.phnno
+FROM employee_master e
+RIGHT JOIN contact_details c
+ON e.emp_no = c.emp_id;
+
+
+# ---------- SELF JOIN ----------
+
+SELECT e.e_name AS Employee,
+       m.e_name AS Manager
+FROM employee_master e
+LEFT JOIN employee_master m
+ON e.manager_id = m.emp_no;
+
+
+# ---------- NATURAL JOIN ----------
+
+SELECT emp_no, e_name, salary, dept, bname
+FROM employee_master
+NATURAL JOIN branch_master;
+
+
+# ---------- EMPLOYEE + CITY ----------
+
+SELECT e.e_name, a.city
+FROM employee_master e
+INNER JOIN branch_master b
+ON e.branch_id = b.branch_id
+INNER JOIN emp_address_details a
+ON e.emp_no = a.emp_id
+WHERE b.bname='Vadgaon';
+
+
+# ---------- SALARY CONDITION ----------
+
+SELECT e.e_name, a.street, a.city
+FROM employee_master e
+INNER JOIN branch_master b
+ON e.branch_id = b.branch_id
+INNER JOIN emp_address_details a
+ON e.emp_no = a.emp_id
+WHERE b.bname='Vadgaon'
+AND e.salary > 10000;
+
+
+# ---------- SAME CITY ----------
+
+SELECT e.e_name,
+       a.city AS Lives_In,
+       ba.city AS Works_In
+FROM employee_master e
+INNER JOIN emp_address_details a
+ON e.emp_no = a.emp_id
+INNER JOIN branch_address ba
+ON e.branch_id = ba.branch_id
+WHERE a.city = ba.city;
+
+
+# =========================================
+# VIEWS
+# =========================================
+
+# ---------- TOTAL EMPLOYEES VIEW ----------
+
+CREATE VIEW total_employees AS
+SELECT COUNT(*) AS Total_Employees
+FROM employee_master;
+
+SELECT * FROM total_employees;
+
+
+# ---------- BRANCH EMPLOYEE COUNT VIEW ----------
+
+CREATE VIEW branch_employee_count AS
+SELECT b.bname,
+COUNT(e.emp_no) AS Employee_Count
+FROM employee_master e
+INNER JOIN branch_master b
+ON e.branch_id = b.branch_id
+GROUP BY b.bname;
+
+SELECT * FROM branch_employee_count;
+
+
+# ---------- BRANCH NAME WITH HIGH SALARY ----------
+
+SELECT DISTINCT b.bname
+FROM employee_master e
+INNER JOIN branch_master b
+ON e.branch_id = b.branch_id
+WHERE e.salary > 25000;
+
+
+# ---------- BRANCH SALARY SUMMARY VIEW ----------
+
+CREATE VIEW branch_salary_summary AS
+SELECT b.bname,
+AVG(e.salary) AS Avg_Salary,
+SUM(e.salary) AS Total_Salary
+FROM employee_master e
+INNER JOIN branch_master b
+ON e.branch_id = b.branch_id
+GROUP BY b.bname;
+
+SELECT * FROM branch_salary_summary;
+
+
+# ---------- SIMPLE VIEW ----------
+
+CREATE VIEW emp_dept_view AS
+SELECT emp_no, e_name, dept
+FROM employee_master;
+
+SELECT * FROM emp_dept_view;
+
+
+# ---------- UPDATE THROUGH VIEW ----------
+
+UPDATE emp_dept_view
+SET dept='HR'
+WHERE emp_no=106;
+
+SELECT * FROM emp_dept_view
+WHERE emp_no=106;
+
+
+# ---------- JOIN VIEW ----------
+
+CREATE VIEW emp_branch_view AS
+SELECT e.emp_no,
+       e.e_name,
+       e.salary,
+       b.bname
+FROM employee_master e
+INNER JOIN branch_master b
+ON e.branch_id = b.branch_id;
+
+SELECT * FROM emp_branch_view;
+
+
+# ---------- UPDATE THROUGH JOIN VIEW ----------
+
+UPDATE emp_branch_view
+SET salary = 32000
+WHERE emp_no = 101;
+
+
+# ---------- INVALID UPDATE ----------
+
+UPDATE emp_branch_view
+SET bname='Shivaji Nagar'
+WHERE emp_no=101;
+
+
+# ---------- DISPLAY TABLE ----------
+
+SELECT * FROM employee_master;
+
+
+# ---------- EXIT MYSQL ----------
+
+EXIT;

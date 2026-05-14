@@ -1,0 +1,250 @@
+# =========================================
+# SUBQUERIES - MYSQL PRACTICAL
+# =========================================
+
+# ---------- CREATE DATABASE ----------
+
+CREATE DATABASE SubqueryDB;
+USE SubqueryDB;
+
+
+# ---------- CREATE TABLES ----------
+
+CREATE TABLE Customer(
+    customer_id INT PRIMARY KEY,
+    customer_name VARCHAR(50),
+    city VARCHAR(30)
+);
+
+CREATE TABLE Product(
+    product_id INT PRIMARY KEY,
+    product_name VARCHAR(50),
+    price DECIMAL(10,2)
+);
+
+CREATE TABLE Orders(
+    order_id INT PRIMARY KEY,
+    customer_id INT,
+    product_id INT,
+    quantity INT,
+
+    FOREIGN KEY(customer_id)
+    REFERENCES Customer(customer_id),
+
+    FOREIGN KEY(product_id)
+    REFERENCES Product(product_id)
+);
+
+
+# ---------- INSERT DATA ----------
+
+INSERT INTO Customer VALUES
+(1,'Amit','Pune'),
+(2,'Priya','Mumbai'),
+(3,'Rahul',NULL),
+(4,'Sneha','Delhi'),
+(5,'Vikram','Chennai');
+
+INSERT INTO Product VALUES
+(101,'Laptop',45000),
+(102,'Mouse',500),
+(103,'Keyboard',1500),
+(104,'Monitor',18000),
+(105,'Printer',12000),
+(106,'Headphones',2500);
+
+INSERT INTO Orders VALUES
+(1001,1,101,1),
+(1002,1,102,2),
+(1003,2,101,1),
+(1004,2,104,1),
+(1005,3,103,3),
+(1006,4,106,2),
+(1007,4,104,1);
+
+
+# ---------- DISPLAY TABLES ----------
+
+SELECT * FROM Customer;
+SELECT * FROM Product;
+SELECT * FROM Orders;
+
+
+# =========================================
+# SUBQUERY OPERATIONS
+# =========================================
+
+# ---------- IN SUBQUERY ----------
+
+SELECT * FROM Customer
+WHERE customer_id IN
+(
+    SELECT customer_id
+    FROM Orders
+);
+
+
+# ---------- NOT IN SUBQUERY ----------
+
+SELECT * FROM Customer
+WHERE customer_id NOT IN
+(
+    SELECT customer_id
+    FROM Orders
+);
+
+
+# ---------- MAX PRICE ----------
+
+SELECT * FROM Product
+WHERE price =
+(
+    SELECT MAX(price)
+    FROM Product
+);
+
+
+# ---------- GREATER THAN AVERAGE ----------
+
+SELECT * FROM Product
+WHERE price >
+(
+    SELECT AVG(price)
+    FROM Product
+);
+
+
+# ---------- SPECIFIC PRODUCT ORDER ----------
+
+SELECT * FROM Customer
+WHERE customer_id IN
+(
+    SELECT customer_id
+    FROM Orders
+    WHERE product_id = 101
+);
+
+
+# ---------- ALL OPERATOR ----------
+
+SELECT * FROM Product
+WHERE price < ALL
+(
+    SELECT p.price
+    FROM Product p
+    INNER JOIN Orders o
+    ON p.product_id = o.product_id
+    WHERE o.customer_id = 2
+);
+
+
+# ---------- PRODUCTS NOT ORDERED ----------
+
+SELECT * FROM Product
+WHERE product_id NOT IN
+(
+    SELECT product_id
+    FROM Orders
+);
+
+
+# ---------- NULL VALUES ----------
+
+SELECT * FROM Customer
+WHERE city IS NULL;
+
+
+# ---------- NOT NULL VALUES ----------
+
+SELECT * FROM Product
+WHERE price IS NOT NULL;
+
+
+# ---------- ANY OPERATOR ----------
+
+SELECT * FROM Product
+WHERE price > ANY
+(
+    SELECT p.price
+    FROM Product p
+    INNER JOIN Orders o
+    ON p.product_id = o.product_id
+    WHERE o.customer_id = 1
+);
+
+
+# ---------- HIGH PRICE PRODUCT CUSTOMERS ----------
+
+SELECT * FROM Customer
+WHERE customer_id IN
+(
+    SELECT o.customer_id
+    FROM Orders o
+    INNER JOIN Product p
+    ON o.product_id = p.product_id
+    WHERE p.price > 20000
+);
+
+
+# ---------- LESS THAN AVERAGE ----------
+
+SELECT * FROM Product
+WHERE price <
+(
+    SELECT AVG(price)
+    FROM Product
+);
+
+
+# ---------- EXISTS SUBQUERY ----------
+
+SELECT * FROM Customer c
+WHERE EXISTS
+(
+    SELECT *
+    FROM Orders o
+    WHERE c.customer_id = o.customer_id
+);
+
+
+# ---------- CORRELATED SUBQUERY ----------
+
+SELECT product_name, price
+FROM Product p1
+WHERE price >
+(
+    SELECT AVG(price)
+    FROM Product p2
+    WHERE p1.product_id <> p2.product_id
+);
+
+
+# ---------- NESTED SUBQUERY ----------
+
+SELECT * FROM Customer
+WHERE customer_id IN
+(
+    SELECT customer_id
+    FROM Orders
+    WHERE product_id IN
+    (
+        SELECT product_id
+        FROM Product
+        WHERE price > 10000
+    )
+);
+
+
+# ---------- SCALAR SUBQUERY ----------
+
+SELECT product_name,
+(
+    SELECT AVG(price)
+    FROM Product
+) AS Average_Price
+FROM Product;
+
+
+# ---------- EXIT MYSQL ----------
+
+EXIT;

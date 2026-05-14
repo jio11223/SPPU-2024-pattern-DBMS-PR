@@ -1,0 +1,294 @@
+# =========================================
+# DATABASE TRIGGERS - MYSQL PRACTICAL
+# BEFORE AND AFTER TRIGGERS
+# =========================================
+
+# ---------- CREATE DATABASE ----------
+
+CREATE DATABASE LibrarySystemDB;
+USE LibrarySystemDB;
+
+
+# ---------- CREATE TABLES ----------
+
+CREATE TABLE Library(
+    B_id INT PRIMARY KEY,
+    Title VARCHAR(100),
+    Edition INT,
+    no_of_copies INT
+);
+
+CREATE TABLE Library_Audit(
+    Audit_id INT AUTO_INCREMENT PRIMARY KEY,
+    B_id INT,
+    Title VARCHAR(100),
+    Edition INT,
+    no_of_copies INT,
+    date_of_modification DATE,
+    type_of_operation VARCHAR(20),
+    user VARCHAR(50)
+);
+
+CREATE TABLE Transaction_Table(
+    Transaction_id INT AUTO_INCREMENT PRIMARY KEY,
+    Book_id INT,
+    S_id INT,
+    Issue_or_Return VARCHAR(10),
+    no_of_copies INT,
+    issue_or_return_date DATE
+);
+
+
+# ---------- INSERT DATA ----------
+
+INSERT INTO Library VALUES
+(101,'Database Systems',5,10),
+(102,'Operating Systems',3,5),
+(103,'Computer Networks',6,8);
+
+
+# ---------- DISPLAY TABLE ----------
+
+SELECT * FROM Library;
+
+
+# =========================================
+# AFTER UPDATE TRIGGER
+# =========================================
+
+DELIMITER //
+
+CREATE TRIGGER trg_library_update
+AFTER UPDATE
+ON Library
+FOR EACH ROW
+
+BEGIN
+
+    INSERT INTO Library_Audit
+    (
+        B_id,
+        Title,
+        Edition,
+        no_of_copies,
+        date_of_modification,
+        type_of_operation,
+        user
+    )
+
+    VALUES
+    (
+        OLD.B_id,
+        OLD.Title,
+        OLD.Edition,
+        OLD.no_of_copies,
+        CURDATE(),
+        'UPDATE',
+        CURRENT_USER()
+    );
+
+END //
+
+DELIMITER ;
+
+
+# =========================================
+# AFTER DELETE TRIGGER
+# =========================================
+
+DELIMITER //
+
+CREATE TRIGGER trg_library_delete
+AFTER DELETE
+ON Library
+FOR EACH ROW
+
+BEGIN
+
+    INSERT INTO Library_Audit
+    (
+        B_id,
+        Title,
+        Edition,
+        no_of_copies,
+        date_of_modification,
+        type_of_operation,
+        user
+    )
+
+    VALUES
+    (
+        OLD.B_id,
+        OLD.Title,
+        OLD.Edition,
+        OLD.no_of_copies,
+        CURDATE(),
+        'DELETE',
+        CURRENT_USER()
+    );
+
+END //
+
+DELIMITER ;
+
+
+# =========================================
+# TEST AUDIT TRIGGERS
+# =========================================
+
+UPDATE Library
+SET no_of_copies = 15
+WHERE B_id = 101;
+
+DELETE FROM Library
+WHERE B_id = 103;
+
+
+# ---------- DISPLAY AUDIT TABLE ----------
+
+SELECT * FROM Library_Audit;
+
+
+# ---------- DISPLAY LIBRARY TABLE ----------
+
+SELECT * FROM Library;
+
+
+# =========================================
+# BEFORE INSERT TRIGGER
+# CHECK AVAILABLE COPIES
+# =========================================
+
+DELIMITER //
+
+CREATE TRIGGER trg_check_available_copies
+BEFORE INSERT
+ON Transaction_Table
+FOR EACH ROW
+
+BEGIN
+
+    DECLARE available_copies INT;
+
+    IF NEW.Issue_or_Return = 'Issue' THEN
+
+        SELECT no_of_copies
+        INTO available_copies
+        FROM Library
+        WHERE B_id = NEW.Book_id;
+
+        IF NEW.no_of_copies > available_copies THEN
+
+            SET NEW.no_of_copies = available_copies;
+
+        END IF;
+
+    END IF;
+
+END //
+
+DELIMITER ;
+
+
+# =========================================
+# AFTER INSERT TRIGGER
+# UPDATE LIBRARY COPIES
+# =========================================
+
+DELIMITER //
+
+CREATE TRIGGER trg_update_library_copies
+AFTER INSERT
+ON Transaction_Table
+FOR EACH ROW
+
+BEGIN
+
+    IF NEW.Issue_or_Return = 'Issue' THEN
+
+        UPDATE Library
+        SET no_of_copies = no_of_copies - NEW.no_of_copies
+        WHERE B_id = NEW.Book_id;
+
+    ELSEIF NEW.Issue_or_Return = 'Return' THEN
+
+        UPDATE Library
+        SET no_of_copies = no_of_copies + NEW.no_of_copies
+        WHERE B_id = NEW.Book_id;
+
+    END IF;
+
+END //
+
+DELIMITER ;
+
+
+# =========================================
+# TEST ISSUE AND RETURN
+# =========================================
+
+# ---------- ISSUE BOOK ----------
+
+INSERT INTO Transaction_Table
+(
+    Book_id,
+    S_id,
+    Issue_or_Return,
+    no_of_copies,
+    issue_or_return_date
+)
+
+VALUES
+(
+    101,
+    501,
+    'Issue',
+    20,
+    CURDATE()
+);
+
+
+# ---------- RETURN BOOK ----------
+
+INSERT INTO Transaction_Table
+(
+    Book_id,
+    S_id,
+    Issue_or_Return,
+    no_of_copies,
+    issue_or_return_date
+)
+
+VALUES
+(
+    102,
+    502,
+    'Return',
+    2,
+    CURDATE()
+);
+
+
+# ---------- DISPLAY TRANSACTION TABLE ----------
+
+SELECT * FROM Transaction_Table;
+
+
+# ---------- DISPLAY FINAL LIBRARY TABLE ----------
+
+SELECT * FROM Library;
+
+
+# =========================================
+# DROP TRIGGERS
+# =========================================
+
+DROP TRIGGER trg_library_update;
+DROP TRIGGER trg_library_delete;
+DROP TRIGGER trg_check_available_copies;
+DROP TRIGGER trg_update_library_copies;
+
+
+# ---------- EXIT MYSQL ----------
+
+EXIT;

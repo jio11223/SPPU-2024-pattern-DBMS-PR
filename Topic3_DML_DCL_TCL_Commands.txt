@@ -1,0 +1,172 @@
+# =========================================
+# MYSQL PRACTICAL
+# DML, FUNCTIONS, SET OPERATORS, DCL, TCL
+# =========================================
+
+# ---------- UBUNTU COMMANDS ----------
+
+sudo apt update
+sudo apt install mysql-server -y
+sudo systemctl start mysql
+sudo mysql
+
+
+# ---------- DATABASE ----------
+
+CREATE DATABASE LibraryDB;
+USE LibraryDB;
+
+
+# ---------- CREATE TABLE ----------
+
+CREATE TABLE Book(
+    Book_ID INT PRIMARY KEY,
+    Book_Name VARCHAR(100),
+    Author VARCHAR(100),
+    Price DECIMAL(10,2),
+    Category VARCHAR(50)
+);
+
+
+# ---------- INSERT DATA ----------
+
+INSERT INTO Book VALUES
+(1,'Database Systems','Elmasri',500,'Education'),
+(2,'Data Structures','Sahni',350,'Programming'),
+(3,'Design Patterns','GoF',450,'Programming'),
+(4,'Discrete Math','Rosen',400,'Education'),
+(5,'Harry Potter','Rowling',300,'Fiction');
+
+
+# ---------- DISPLAY TABLE ----------
+
+SELECT * FROM Book;
+
+
+# ---------- UPDATE ----------
+
+UPDATE Book
+SET Price = Price * 1.10
+WHERE Category='Programming';
+
+
+# ---------- DELETE ----------
+
+DELETE FROM Book
+WHERE Price < 350;
+
+
+# ---------- ARITHMETIC OPERATOR ----------
+
+SELECT Book_Name, Price, Price+50 AS New_Price
+FROM Book;
+
+
+# ---------- LOGICAL OPERATOR ----------
+
+SELECT * FROM Book
+WHERE Category='Education'
+AND Price > 450;
+
+
+# ---------- LIKE OPERATOR ----------
+
+SELECT * FROM Book
+WHERE Book_Name LIKE 'D%';
+
+
+# ---------- STRING FUNCTIONS ----------
+
+SELECT UPPER(Book_Name), LOWER(Author)
+FROM Book;
+
+
+# ---------- LENGTH FUNCTION ----------
+
+SELECT Book_Name, LENGTH(Book_Name)
+FROM Book;
+
+
+# ---------- SUBSTRING FUNCTION ----------
+
+SELECT Book_Name, SUBSTRING(Book_Name,1,4)
+FROM Book;
+
+
+# ---------- CREATE SECOND TABLE ----------
+
+CREATE TABLE Issued_Book(
+    Book_Name VARCHAR(100)
+);
+
+
+# ---------- INSERT DATA ----------
+
+INSERT INTO Issued_Book VALUES
+('Data Structures'),
+('Database Systems'),
+('Operating Systems');
+
+
+# ---------- UNION ----------
+
+SELECT Book_Name FROM Book
+UNION
+SELECT Book_Name FROM Issued_Book;
+
+
+# ---------- INTERSECT (MYSQL METHOD) ----------
+
+SELECT Book_Name FROM Book
+WHERE Book_Name IN
+(
+    SELECT Book_Name FROM Issued_Book
+);
+
+
+# ---------- CREATE USER ----------
+
+CREATE USER 'library_user'@'localhost'
+IDENTIFIED BY 'password123';
+
+
+# ---------- GRANT PRIVILEGES ----------
+
+GRANT SELECT, UPDATE
+ON LibraryDB.Book
+TO 'library_user'@'localhost';
+
+
+# ---------- REVOKE PRIVILEGE ----------
+
+REVOKE UPDATE
+ON LibraryDB.Book
+FROM 'library_user'@'localhost';
+
+
+# ---------- TCL COMMANDS ----------
+
+START TRANSACTION;
+
+INSERT INTO Book VALUES
+(6,'Operating Systems','Galvin',600,'Education');
+
+SAVEPOINT sp1;
+
+UPDATE Book
+SET Price = 650
+WHERE Book_ID = 6;
+
+ROLLBACK TO sp1;
+
+COMMIT;
+
+
+# ---------- FINAL TABLE ----------
+
+SELECT * FROM Book;
+
+
+# ---------- EXIT MYSQL ----------
+
+EXIT;
